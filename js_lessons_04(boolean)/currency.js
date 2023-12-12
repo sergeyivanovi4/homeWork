@@ -33,6 +33,11 @@ if (!summ || summ === "") {
 } else {
     let result = Buying ? summ / rate : summ * rate
     alert("Тримайте Вашу суму: " + result.toFixed(2) + " " + currensy)
+    // if (result = true) {
+    //     alert("Тримайте Вашу суму: " + result.toFixed(2) + " " + currensy)
+    // } else {
+    //     alert("Тримайте Вашу суму: " + result.toFixed(2) + " " + "uah")
+    // }
 }
 
 
