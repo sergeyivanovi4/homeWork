@@ -70,9 +70,9 @@ var tree = {
 }
 
 // Виведення значення тексту другої кнопки
-const cancelButtonText = structure.children[1].children[1].children[0];
-console.log(cancelButtonText); // "Cancel"
+const cancelButton = tree.children[1].children[1].children[0];
+console.log(cancelButton); // "Cancel"
 
 // Виведення значення атрибуту id другого input
-const surnameInputId = structure.children[0].children[3].attrs.id;
-console.log(surnameInputId);
+const nameInputId = tree.children[0].children[3].attrs.id;
+console.log(nameInputId);
