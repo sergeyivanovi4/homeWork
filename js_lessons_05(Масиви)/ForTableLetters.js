@@ -13,5 +13,5 @@ for (const currency of currencies){ //цикл створює рядки
         console.log(letter)
     }
 }
-str+= "</table>"
+str += "</table>"
 document.write(str) //document.write відобразить ваш HTML на сторінці
