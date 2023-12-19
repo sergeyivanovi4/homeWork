@@ -33,6 +33,7 @@ const car = {
     "Origin": "USA",
     "in_production": false
 };
+// ВСЕ ЗРОБИВ ЧАТGPT , ПРИЗНАЮ!!!
 
 // Функція для створення форми з об'єкта
 function createFormFromObject(obj) {
