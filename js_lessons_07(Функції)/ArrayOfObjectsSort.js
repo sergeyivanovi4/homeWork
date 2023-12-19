@@ -24,7 +24,7 @@ function sort(arr, property, ascending = true) {
         }
     });
 }
-
+ 
 // Приклад використання:
 var persons = [
     { name: "Іван", age: 17 },
