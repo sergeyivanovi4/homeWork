@@ -45,3 +45,5 @@ fetch(apiUrl).then((res) => res.json())
         // Виведення результату
         console.log(`${amount} ${fromCurrency} = ${result.toFixed(2)} ${toCurrency}`);
     })
+
+    
