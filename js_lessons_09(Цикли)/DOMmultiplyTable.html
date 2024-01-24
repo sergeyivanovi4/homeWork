@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+
+    <style>
+        table {
+            border-collapse: collapse;
+            margin: 20px;
+        }
+
+        td, th {
+            border: 1px solid black;
+            padding: 10px;
+            text-align: center;
+        }
+
+        /* .highlight {
+            background-color: yellow;
+        } */
+    </style>
+</head>
+<body>
+    
+    <script>
+        // Отримуємо батьківський елемент (body)
+        var body = document.body;
+    
+        // Створюємо елемент таблиці
+        var table = document.createElement('table');
+    
+        // Зовнішній цикл для рядків таблиці
+        for (var i = 1; i <= 10; i++) {
+            // Створюємо рядок (tr)
+            var row = document.createElement('tr');
+    
+            // Внутрішній цикл для комірок (td)
+            for (var j = 1; j <= 10; j++) {
+                // Створюємо комірку
+                var cell = document.createElement('td');
+    
+                // Додаємо текстовий вміст комірки (результат множення)
+                cell.innerText = i * j;
+
+                 // Додаємо обробники подій для підсвічування
+            // cell.addEventListener('mouseover', createMouseoverHandler(cell));
+            // cell.addEventListener('mouseout', createMouseoutHandler(cell));
+    
+                // Додаємо комірку до рядка
+                row.appendChild(cell);
+            }
+    
+            // Додаємо рядок до таблиці
+            table.appendChild(row);
+        }
+    
+        // Додаємо таблицю до body
+        body.appendChild(table);
+
+
+    //     // Функція для створення обробника події mouseover
+    // function createMouseoverHandler(cell) {
+    //     return function () {
+    //         cell.classList.add('highlight');
+    //     };
+    // }
+
+    // // Функція для створення обробника події mouseout
+    // function createMouseoutHandler(cell) {
+    //     return function () {
+    //         cell.classList.remove('highlight');
+    //     };
+    // }
+    </script>
+</body>
+</html>

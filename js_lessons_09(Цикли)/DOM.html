@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+
+    <style>
+        table {
+            border-collapse: collapse;
+            margin: 20px;
+        }
+
+        td, th {
+            border: 1px solid black;
+            padding: 10px;
+            text-align: center;
+        }
+
+        .highlight {
+            background-color: yellow;
+        }
+    </style>
+
+</head>
+<body>
+    <!-- ВСЕ ЗРОБИВ ЧАТ ЖПТ: -->
+    <!-- ВСЕ ЗРОБИВ ЧАТ ЖПТ: -->
+    <!-- ВСЕ ЗРОБИВ ЧАТ ЖПТ: -->
+<script>
+    // Отримуємо батьківський елемент (body)
+    var body = document.body;
+
+    // Створюємо елемент таблиці
+    var table = document.createElement('table');
+
+    // Зовнішній цикл для рядків таблиці
+    for (var i = 1; i <= 10; i++) {
+        // Створюємо рядок (tr)
+        var row = document.createElement('tr');
+
+        // Внутрішній цикл для комірок (td)
+        for (var j = 1; j <= 10; j++) {
+            // Створюємо комірку
+            var cell = document.createElement('td');
+
+            // Додаємо текстовий вміст комірки (результат множення)
+            cell.innerText = i * j;
+
+            // Додаємо обробники подій для підсвічування
+            cell.addEventListener('mouseover', createMouseoverHandler(row, j));
+            cell.addEventListener('mouseout', createMouseoutHandler(row));
+
+            // Додаємо комірку до рядка
+            row.appendChild(cell);
+        }
+
+        // Додаємо рядок до таблиці
+        table.appendChild(row);
+    }
+
+    // Додаємо таблицю до body
+    body.appendChild(table);
+
+    var highlightedRow;
+    var highlightedColumn;
+
+    // Функція для створення обробника події mouseover
+    function createMouseoverHandler(row, column) {
+        return function () {
+            // Підсвічуємо рядок і стовпець
+            highlightRow(row);
+            highlightColumn(column);
+        };
+    }
+
+    // Функція для створення обробника події mouseout
+    function createMouseoutHandler(row) {
+        return function () {
+            // Зняття підсвічування при виході з комірки
+            unhighlightRow(row);
+            unhighlightColumn();
+        };
+    }
+
+    // Функція для підсвічування рядка
+    function highlightRow(row) {
+        row.classList.add('highlight');
+        highlightedRow = row;
+    }
+
+    // Функція для підсвічування стовпця
+    function highlightColumn(column) {
+        for (var i = 0; i < table.rows.length; i++) {
+            table.rows[i].cells[column - 1].classList.add('highlight');
+        }
+        highlightedColumn = column;
+    }
+
+    // Функція для зняття підсвічування рядка
+    function unhighlightRow(row) {
+        if (highlightedRow) {
+            highlightedRow.classList.remove('highlight');
+        }
+    }
+
+    // Функція для зняття підсвічування стовпця
+    function unhighlightColumn() {
+        if (highlightedColumn !== undefined) {
+            for (var i = 0; i < table.rows.length; i++) {
+                table.rows[i].cells[highlightedColumn - 1].classList.remove('highlight');
+            }
+        }
+    }
+</script>
+
+</body>
+</html>
