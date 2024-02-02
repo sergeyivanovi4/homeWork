@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Магазин</title>
+    <style>
+        body {
+          margin: 0;
+          padding: 20px;
+        }
+        .item {
+          margin-bottom: 10px;
+        }
+      </style>
+</head>
+<body>
+    <h1>Виберіть товар та введіть кількість:</h1>
+  <div class="item">
+    <label for="товар">Товар:</label>
+    <select id="товар">
+      <option value="пиво">Пиво</option>
+      <option value="чіпси">Чіпси</option>
+      <option value="газована_вода">Газована вода</option>
+    </select>
+  </div>
+  <div class="item">
+    <label for="кількість">Кількість:</label>
+    <input type="number" id="кількість" min="1" value="1">
+  </div>
+  <div class="item">
+    <button onclick="купити()">Купити</button>
+  </div>
+
+
+
+  
+  <script>
+                       // Загальні функції
+const createStore = (reducer) => {
+  let state;
+  let listeners = [];
+
+  const getState = () => state;
+
+  const dispatch = (action) => {
+    state = reducer(state, action);
+    listeners.forEach(listener => listener());
+  };
+
+  const subscribe = (listener) => {
+    listeners.push(listener);
+    return () => {
+      listeners = listeners.filter(l => l !== listener);
+    };
+  };
+
+  dispatch({}); 
+  return { getState, dispatch, subscribe };
+};
+
+                        // Початковий стан
+const initialState = {
+  кіоск: {
+    пиво: { кількість: 100, ціна: 2 },
+    чіпси: { кількість: 50, ціна: 1.5 },
+    газована_вода: { кількість: 75, ціна: 1 },
+  },
+  каса: 0,
+  заголовок: 'Каса: 0 грн',
+};
+
+
+
+
+const reducer = (state = initialState, action) => {
+  switch (action.type) {
+    case 'КУПИТИ':
+      const { товар, кількість, кошти } = action.payload;
+      const товарЦіна = state.кіоск[товар].ціна;
+      const загальнаВартість = товарЦіна * кількість;
+
+      if (state.кіоск[товар].кількість < кількість || кошти < загальнаВартість) {
+        console.log('Недостатньо товару або коштів!');
+        return state;
+      }
+
+      return {
+        ...state,
+        кіоск: {
+          ...state.кіоск,
+          [товар]: {
+            ...state.кіоск[товар],
+            кількість: state.кіоск[товар].кількість - кількість,
+          },
+        },
+        каса: state.каса + загальнаВартість,
+        заголовок: `Каса: ${state.каса + загальнаВартість} грн`,
+      };
+    default:
+      return state;
+  }
+};
+
+                    // Створення магазину
+const store = createStore(reducer);
+
+                    // Оновлення заголовка сторінки
+const updateTitle = () => {
+  document.title = store.getState().заголовок;
+};
+
+                  // Підписка на зміни стану
+store.subscribe(updateTitle);
+
+                        // Функція купівлі товару
+const купитиТовар = (товар, кількість, кошти) => {
+  store.dispatch({
+    type: 'КУПИТИ',
+    payload: {
+      товар,
+      кількість,
+      кошти,
+    },
+  });
+};
+
+// Далі інтерфейс для відображення товарів та взаємодії з користувачем.
+
+
+    // Функція купівлі товару та взаємодії з магазином
+    const купити = () => {
+      const товар = document.getElementById('товар').value;
+      const кількість = parseInt(document.getElementById('кількість').value);
+      const кошти = parseFloat(prompt('Введіть суму коштів:'));
+
+      купитиТовар(товар, кількість, кошти);
+    };
+
+    // Функція підписки на зміни стану магазину та оновлення інтерфейсу
+    const поновитиІнтерфейс = () => {
+      const state = store.getState();
+      document.title = state.заголовок; // Оновлення заголовка сторінки
+
+      // Оновлення відображення кількості товарів у вікні вибору
+      Object.keys(state.кіоск).forEach((товар) => {
+        const кількістьТовару = state.кіоск[товар].кількість;
+        const option = document.querySelector(`option[value='${товар}']`);
+        option.textContent = `${товар} (${кількістьТовару} шт.)`;
+      });
+    };
+
+    // Підписка на зміни стану
+    store.subscribe(поновитиІнтерфейс);
+
+    // Початкове оновлення інтерфейсу
+    поновитиІнтерфейс();
+  </script>
+</body>
+</html>
