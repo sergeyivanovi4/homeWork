@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>traffic-light</title>
+
+    <style>
+        * {
+            margin: 1vw auto;
+        }
+        .traffic-light, .traffic-light-pedestrian {
+            width: 100px;
+            height: 300px;
+            border: 2px solid black;
+            border-radius: 10px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .traffic-light-pedestrian {
+            height: 150px;
+        }
+        .light {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            margin: 10px;
+        }
+        .green {
+            background-color: green;
+        }
+        .yellow {
+            background-color: yellow;
+        }
+        .red {
+            background-color: red;
+        }
+
+        .light-pedestrian {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            margin: 10px;
+        }
+        .red-pedestrian {
+            background-color: red;
+        }
+        .green-pedestrian {
+            background-color: green;
+        }
+        #crosswalk {
+            display: block;
+            width: 100px;
+            height: 50px;
+        }
+    </style>
+
+</head>
+<body>
+    <div class="traffic-light">
+        <div class="light red"></div>
+        <div class="light yellow"></div>
+        <div class="light green"></div>
+    </div>
+
+    <div class="traffic-light-pedestrian">
+        <div class="light-pedestrian red-pedestrian"></div>
+        <div class="light-pedestrian"></div>
+    </div>
+
+    <button id="crosswalk">Перейти</button>
+        
+    <script>
+        const delay = ms => new Promise(ok => setTimeout(ok, ms));
+        
+        async function trafficLight(){
+        const greenLight = document.querySelector('.green');
+        const yellowLight = document.querySelector('.yellow');
+        const redLight = document.querySelector('.red');
+        
+        while (true){
+            // Включаємо зелений
+            greenLight.style.opacity = 1;
+            yellowLight.style.opacity = 0.3;
+            redLight.style.opacity = 0.3;
+            await delay(3000);
+            // Включаємо жовтий
+            greenLight.style.opacity = 0.3;
+            yellowLight.style.opacity = 1;
+            redLight.style.opacity = 0.3;
+            await delay(1000);
+            // Включаємо червоний
+            greenLight.style.opacity = 0.3;
+            yellowLight.style.opacity = 0.3;
+            redLight.style.opacity = 1;
+            await delay(2000);
+        }
+        }
+        
+        trafficLight();
+
+
+        const delayPedestrian = ms => new Promise(resolve => setTimeout(resolve, ms));
+
+        function domEventPromise(element, event) {
+        return new Promise(resolve => {
+            element.addEventListener(event, () => resolve(event), { once: true });
+        });
+        }
+
+        async function pedestrianCrosswalk() {
+        const lights = document.querySelectorAll('.light-pedestrian');
+        const crosswalkButton = document.getElementById('crosswalk');
+        
+        while (true) {
+            // Червоне світло
+            lights[0].classList.add('red-pedestrian');
+            await delayPedestrian(3000); // Затримка перед активацією кнопки
+            crosswalkButton.disabled = false; // Активуємо кнопку
+        
+            // Очікуємо подію кліку на кнопці або таймер 10 секунд
+            await Promise.race([domEventPromise(crosswalkButton, 'click'), delayPedestrian(10000)]);
+            crosswalkButton.disabled = true; // Вимикаємо кнопку
+        
+            // Зелене світло
+            lights[0].classList.remove('red-pedestrian');
+            lights[1].classList.add('green-pedestrian');
+            await delayPedestrian(5000);
+            
+            // Червоне світло
+            lights[1].classList.remove('green-pedestrian');
+        }
+        }
+
+        pedestrianCrosswalk();
+    </script>
+</body>
+</html>
