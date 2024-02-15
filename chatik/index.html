@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chat Form</title>
+    <style>
+        .chat-form {
+            display: flex;
+            flex-direction: column;
+            width: 300px;
+            margin: 0 auto;
+            padding: 20px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+        }
+
+        .chat-form label {
+            margin-bottom: 10px;
+        }
+
+        .chat-form input[type="text"],
+        .chat-form textarea {
+            width: 100%;
+            padding: 8px;
+            margin-bottom: 10px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            box-sizing: border-box;
+        }
+
+        .chat-form button {
+            width: 100%;
+            padding: 10px;
+            background-color: #007bff;
+            color: #fff;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+
+        .chat-form button:hover {
+            background-color: #0056b3;
+        }
+    </style>
+</head>
+<body>
+    <div class="chat-form">
+        <label for="nickname">Nickname:</label>
+        <input type="text" id="nickname" name="nickname" placeholder="Enter your nickname">
+        <label for="message">Message:</label>
+        <textarea id="message" name="message" rows="4" placeholder="Enter your message"></textarea>
+        <button onclick="sendMessage()">Send</button>
+    </div>
+
+    <div class="chat-messages" id="chatMessages">
+        <!-- Messages will be displayed here -->
+    </div>
+
+    <script>
+        async function sendMessage() {
+            const nickname = document.getElementById('nickname').value;
+            const message = document.getElementById('message').value;
+
+            try {
+                const response = await jsonPost("http://students.a-level.com.ua:10012", { func: 'addMessage', nick: nickname, message: message });
+                console.log(response);
+                // Додаткові дії після успішного надсилання повідомлення
+            } catch (error) {
+                console.error('Error sending message:', error);
+            }
+        }
+
+        function jsonPost(url, data) {
+            return new Promise((resolve, reject) => {
+                var x = new XMLHttpRequest();
+                x.onerror = () => reject(new Error('jsonPost failed'))
+                x.open("POST", url, true);
+                x.send(JSON.stringify(data))
+
+                x.onreadystatechange = () => {
+                    if (x.readyState == XMLHttpRequest.DONE && x.status == 200) {
+                        resolve(JSON.parse(x.responseText))
+                    } else if (x.status != 200) {
+                        reject(new Error('status is not 200'))
+                    }
+                }
+            })
+        }
+
+        // Function to display messages in the chat container
+        function displayMessage(nickname, message, timestamp) {
+            const chatMessages = document.getElementById('chatMessages');
+
+            // Create a div element for the message
+            const messageDiv = document.createElement('div');
+            messageDiv.classList.add('chat-message');
+
+            // Create span for nickname
+            const nicknameSpan = document.createElement('span');
+            nicknameSpan.textContent = nickname + ': ';
+            messageDiv.appendChild(nicknameSpan);
+
+            // Create paragraph for message
+            const messagePara = document.createElement('p');
+            messagePara.textContent = message;
+            messageDiv.appendChild(messagePara);
+
+            // Create span for timestamp
+            const timestampSpan = document.createElement('span');
+            const date = new Date(timestamp);
+            timestampSpan.textContent = ' (' + date.toLocaleString() + ')';
+            messageDiv.appendChild(timestampSpan);
+
+            // Append the message div to the chat container
+            chatMessages.appendChild(messageDiv);
+
+            // Scroll to bottom of chat container
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+        }
+
+        // Ось оновлений код з використанням nextMessageId:
+
+
+        // let nextMessageId = 0;
+
+        // async function getMessages() {
+        //     try {
+        //         const response = await jsonPost("http://students.a-level.com.ua:10012", { func: "getMessages", messageId: nextMessageId });
+        //         const messages = response.data;
+                
+        //         // Update nextMessageId
+        //         nextMessageId = response.nextMessageId;
+
+        //         messages.forEach(message => {
+        //             const { nick, message: msg, timestamp } = message;
+        //             displayMessage(nick, msg, timestamp);
+        //         });
+        //     } catch (error) {
+        //         console.error("Error fetching messages:", error);
+        //     }
+        // }
+
+        // Initial call to get messages
+        // getMessages();
+
+        // Оновлюємо нові повідомлення кожні 5 секунд
+        // const intervalId = setInterval(getMessages, 5000);
+
+        // // Зупинка перевірки нових повідомлень після 1 хвилини (60 секунд)
+        // setTimeout(() => {
+        //     clearInterval(intervalId);
+        //     console.log('Перевірка нових повідомлень припинена.');
+        // }, 60000);
+
+        //         async function sendMessage(nick, message) {
+        //     try {
+        //         // Відправляємо повідомлення на сервер
+        //         const response = await jsonPost("http://students.a-level.com.ua:10012", { func: 'addMessage', nick, message });
+        //         console.log('Повідомлення успішно відправлено:', response);
+        //     } catch (error) {
+        //         console.error('Помилка під час відправлення повідомлення:', error);
+        //     }
+        // }
+
+        // async function getMessages() {
+        //     try {
+        //         // Отримуємо повідомлення з сервера
+        //         const response = await jsonPost("http://students.a-level.com.ua:10012", { func: 'getMessages', messageId: nextMessageId });
+                
+        //         // Оновлюємо nextMessageId для наступного запиту
+        //         nextMessageId = response.nextMessageId;
+
+        //         // Додаємо отримані повідомлення у контейнер
+        //         const messagesContainer = document.getElementById('messages-container');
+        //         response.data.forEach(message => {
+        //             const messageDiv = document.createElement('div');
+        //             messageDiv.textContent = `${message.nick}: ${message.message} [${new Date(message.timestamp)}]`;
+        //             messagesContainer.appendChild(messageDiv);
+        //         });
+        //     } catch (error) {
+        //         console.error('Помилка під час отримання повідомлень:', error);
+        //     }
+        // }
+
+        // async function sendAndCheck(nick, message) {
+        //     try {
+        //         // Відправляємо повідомлення
+        //         await sendMessage(nick, message);
+
+        //         // Отримуємо та додаємо нові повідомлення
+        //         await getMessages();
+        //     } catch (error) {
+        //         console.error('Помилка під час відправки та отримання повідомлень:', error);
+        //     }
+        // }
+
+
+
+        //         async function sendMessage(nick, message) {
+        //     try {
+        //         const response = await fetch('http://students.a-level.com.ua:10012', {
+        //             method: 'POST',
+        //             headers: {
+        //                 'Content-Type': 'application/json'
+        //             },
+        //             body: JSON.stringify({ func: 'addMessage', nick, message })
+        //         });
+
+        //         if (!response.ok) {
+        //             throw new Error('Failed to send message');
+        //         }
+
+        //         const responseData = await response.json();
+        //         console.log('Повідомлення успішно відправлено:', responseData);
+        //     } catch (error) {
+        //         console.error('Помилка під час відправлення повідомлення:', error);
+        //     }
+        // }
+
+        // async function getMessages() {
+        //     try {
+        //         const response = await fetch('http://students.a-level.com.ua:10012', {
+        //             method: 'POST',
+        //             headers: {
+        //                 'Content-Type': 'application/json'
+        //             },
+        //             body: JSON.stringify({ func: 'getMessages', messageId: nextMessageId })
+        //         });
+
+        //         if (!response.ok) {
+        //             throw new Error('Failed to get messages');
+        //         }
+
+        //         const responseData = await response.json();
+
+        //         // Оновлюємо nextMessageId для наступного запиту
+        //         nextMessageId = responseData.nextMessageId;
+
+        //         // Додаємо отримані повідомлення у контейнер
+        //         const messagesContainer = document.getElementById('messages-container');
+        //         responseData.data.forEach(message => {
+        //             const messageDiv = document.createElement('div');
+        //             messageDiv.textContent = `${message.nick}: ${message.message} [${new Date(message.timestamp)}]`;
+        //             messagesContainer.appendChild(messageDiv);
+        //         });
+        //     } catch (error) {
+        //         console.error('Помилка під час отримання повідомлень:', error);
+        //     }
+        // }
+
+    </script>
+</body>
+</html>
