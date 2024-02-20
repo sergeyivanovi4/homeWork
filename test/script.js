@@ -1,15 +1,79 @@
-function gql(url, query, variables={}) {
-    return fetch(url, {
-        method: "POST",
+// function gql(url, query, variables={}) {
+//     return fetch(url, {
+//         method: "POST",
+//         headers: {
+//             'Content-Type': 'application/json',
+//             Accept: 'application/json'
+//         },
+//         body: JSON.stringify({query, variables}) 
+//     })
+//     .then(res => res.json())
+    
+// }
+async function gql(endpoint, query, variables) {
+    const options = {
+        method: 'POST',
         headers: {
             'Content-Type': 'application/json',
-            Accept: 'application/json'
+            'Accept': 'application/json',
+            // ...("token" in store.getState().auth ? {Authorization: `Bearer $(store.getState().auth.token)`} : null)
         },
-        body: JSON.stringify({query, variables}) 
-    })
-    .then(res => res.json())
-    
+        body: JSON.stringify({
+            query,
+            variables
+        })
+    };
+
+    try {
+        const response = await fetch(endpoint, options);
+        const data = await response.json();
+        return data;
+    } catch (error) {
+        throw new Error(`GraphQL request failed: ${error}`);
+    }
 }
+
+
+const endpoint = "http://shop-roles.node.ed.asmer.org.ua/graphql";
+const query = `
+    query cats($q: String){
+        CategoryFind(query: $q){
+            _id
+            name
+        }
+    }
+`;
+const variables = {
+    q: "[{}]"       // \\"parent\\": null ??
+};
+
+gql(endpoint, query, variables)
+    .then(data => console.log(data))
+    .catch(error => console.error(error));
+
+
+
+function jwtDecode(token) {
+    try {
+        if (!token || typeof token !== 'AUTH_LOGIN') {  // string --> AUTH_LOGIN???
+            return undefined;
+        }
+
+        const parts = token.split('.');
+        if (parts.length !== 3) {
+            return undefined;
+        }
+
+        const decoded = atob(parts[1]);
+        const payload = JSON.parse(decoded);
+
+        return payload;
+    } catch (error) {
+        return undefined;
+    }
+}  
+
+
 
 function createStore(reducer){
     let state       = reducer(undefined, {}) //стартовая инициализация состояния, запуск редьюсера со state === undefined
@@ -37,6 +101,27 @@ function createStore(reducer){
     }
 }
 
+
+
+function localStoredReducer(originalReducer, localStorageKey) {
+    function wrapper(state, action) {
+        if (state === undefined) {
+            try {
+                return JSON.parse(localStorage[localStorageKey])
+            } catch(error) {
+                console.log(error)
+            }
+        }
+        const newState = originalReducer(state, action)
+        localStorage[localStorageKey] = JSON.stringify(newState)
+        return newState
+    }
+    return wrapper
+}
+
+
+
+
 function combineReducers(reducers){
     function totalReducer(state={}, action){
         const newTotalState = {}
@@ -57,11 +142,12 @@ function combineReducers(reducers){
 
 const reducers = {
     promise: promiseReducer, //допилить много имен для многих промисо
-    //auth: authReducer,     //часть предыдущего ДЗ
+    auth: localStoredReducer//(authReducer, "auth"),     //часть предыдущего ДЗ
     //cart: cartReducer,     //часть предыдущего ДЗ
 }
 
 const totalReducer = combineReducers(reducers) 
+
 // function promiseReducer(state={}, {type, status, payload, error}){
 //     if (type === 'PROMISE'){
 //         //имена добавить

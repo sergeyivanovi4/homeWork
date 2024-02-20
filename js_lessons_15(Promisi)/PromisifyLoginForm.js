@@ -63,66 +63,66 @@ function Password(parent, open) {
 // 
 // 
 
-function LoginForm(parent) {
-    // Створюємо форму логіна
-    const loginForm = document.createElement('form');
-    parent.appendChild(loginForm);
+// function LoginForm(parent) {
+//     // Створюємо форму логіна
+//     const loginForm = document.createElement('form');
+//     parent.appendChild(loginForm);
 
-    // Створюємо поле логіна
-    const loginInput = document.createElement('input');
-    loginInput.type = 'text';
-    loginInput.placeholder = 'Логін';
-    loginForm.appendChild(loginInput);
+//     // Створюємо поле логіна
+//     const loginInput = document.createElement('input');
+//     loginInput.type = 'text';
+//     loginInput.placeholder = 'Логін';
+//     loginForm.appendChild(loginInput);
 
-    // Створюємо поле пароля
-    const password = new Password(loginForm, false);
+//     // Створюємо поле пароля
+//     const password = new Password(loginForm, false);
 
-    // Створюємо кнопку входу
-    const submitButton = document.createElement('button');
-    submitButton.textContent = 'Увійти';
-    loginForm.appendChild(submitButton);
+//     // Створюємо кнопку входу
+//     const submitButton = document.createElement('button');
+//     submitButton.textContent = 'Увійти';
+//     loginForm.appendChild(submitButton);
 
-    // Метод, який повертає значення логіна
-    this.getLogin = function() {
-        return loginInput.value.trim();
-    };
+//     // Метод, який повертає значення логіна
+//     this.getLogin = function() {
+//         return loginInput.value.trim();
+//     };
 
-    // Метод, який встановлює значення логіна
-    this.setLogin = function(value) {
-        loginInput.value = value;
-    };
+//     // Метод, який встановлює значення логіна
+//     this.setLogin = function(value) {
+//         loginInput.value = value;
+//     };
 
-    // Метод, який повертає стан відкритості пароля
-    this.getPasswordOpen = function() {
-        return password.getOpen();
-    };
+//     // Метод, який повертає стан відкритості пароля
+//     this.getPasswordOpen = function() {
+//         return password.getOpen();
+//     };
 
-    // Метод, який встановлює стан відкритості пароля
-    this.setPasswordOpen = function(value) {
-        password.setOpen(value);
-    };
+//     // Метод, який встановлює стан відкритості пароля
+//     this.setPasswordOpen = function(value) {
+//         password.setOpen(value);
+//     };
 
-    // Метод, який встановлює колбек для події зміни значення логіна
-    this.onLoginChange = function(callback) {
-        loginInput.addEventListener('input', callback);
-    };
+//     // Метод, який встановлює колбек для події зміни значення логіна
+//     this.onLoginChange = function(callback) {
+//         loginInput.addEventListener('input', callback);
+//     };
 
-    // Метод, який встановлює колбек для події зміни стану відкритості пароля
-    this.onPasswordOpenChange = function(callback) {
-        password.onOpenChange = callback;
-    };
+//     // Метод, який встановлює колбек для події зміни стану відкритості пароля
+//     this.onPasswordOpenChange = function(callback) {
+//         password.onOpenChange = callback;
+//     };
 
-    // Метод, який встановлює колбек для події відправки форми
-    this.onSubmit = function(callback) {
-        loginForm.addEventListener('submit', function(event) {
-            event.preventDefault();
-            callback();
-        });
-    };
+//     // Метод, який встановлює колбек для події відправки форми
+//     this.onSubmit = function(callback) {
+//         loginForm.addEventListener('submit', function(event) {
+//             event.preventDefault();
+//             callback();
+//         });
+//     };
 
-    // Ініціалізуємо стан кнопки входу
-    submitButton.disabled = true;
-}
+//     // Ініціалізуємо стан кнопки входу
+//     submitButton.disabled = true;
+// }
 
 
 

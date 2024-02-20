@@ -6,7 +6,7 @@
 
 function authReducer(token) {
     try {
-        if (!token || typeof token !== 'string') {  // string --> AUTH_LOGIN???
+        if (!token || typeof token !== 'AUTH_LOGIN') {  // string --> AUTH_LOGIN???
             return undefined;
         }
 
@@ -243,7 +243,7 @@ const query = `
     }
 `;
 const variables = {
-    q: "[{}]"        // \\"parent\\": null ??
+    q: "[{}]"       // \\"parent\\": null ??
 };
 
 gql(endpoint, query, variables)
