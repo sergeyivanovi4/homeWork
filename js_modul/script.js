@@ -516,10 +516,10 @@ const actionLogin = (login, password) => actionPromise('fullLogin', gqlFullLogin
 const actionFullLogin = (login, password) => async dispatch => {
     try {
         const token = await dispatch(actionLogin(login, password));
-        console.log(token)
+        console.log(token.data.login)
         
-        if (typeof token === 'string') {
-            dispatch(actionAuthLogin(token));
+        if (typeof token.data.login === 'string') {
+            store.dispatch(actionAuthLogin(token.data.login));
         } else {
             console.error('Oтримано не вірний ТОКІН')
         }
@@ -782,7 +782,7 @@ window.onhashchange = () => {
             })
         },
 
-        logout(){
+        loguot(){
             console.log('А ТУТ ЩА ДОЛЖНА БЫТЬ вихід')
 
             if (confirm("Хочете вийти?")) {
@@ -803,6 +803,6 @@ window.onhashchange()
 
 
 store.subscribe(() => {
-    loginName.innerHTML = ("token" in store.getState().auth ? store.getState().auth.payload.sub.login : "Не зареєстрованний абонент")
+    loginName.innerHTML = ("token" in store.getState().auth ? `Користувач з логіном: ${store.getState().auth.payload.sub.login}` : "Не зареєстрованний абонент")
 })
 
