@@ -31,7 +31,8 @@ async function gql(endpoint, query, variables) {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
-            'Accept': 'application/json'
+            'Accept': 'application/json',
+            // ...("token" in store.getState().auth ? {Authorization: `Bearer $(store.getState().auth.token)`} : null)
         },
         body: JSON.stringify({
             query,
@@ -72,13 +73,14 @@ gql(endpoint, query, variables)
 
 function jwtDecode(token) {
     try {
-        if (token && token.split(".").length === 3) {
-            const tokenArr = token.split(".")
-            const decodedToken = atob(tokenArr[1])
-            const payload = JSON.parse(decodedToken)
-            return payload
-        }
-        return undefined
+        // if (token && token.split(".").length === 3) {
+        //     const tokenArr = token.split(".")
+        //     const decodedToken = atob(tokenArr[1])
+        //     const payload = JSON.parse(decodedToken)
+        //     return payload
+        // }
+        // return undefined
+        return JSON.parse(atob (token.split(".")[1]))
     } catch(error) {
         return undefined
     }
@@ -208,6 +210,7 @@ const actionPromise = (namePromise, promise) => async dispatch => {
     try {
         const payload = await promise
         dispatch(actionFulfilled(namePromise, payload))
+        return payload
     } catch(error) {
         dispatch(actionRejected(namePromise, error))
     }
@@ -323,9 +326,11 @@ store.subscribe(() => {
 })
 
 
-// store.subscribe(() => {
-//     login.innerHTML = ("token" in store.getState().auth ? store.getState().auth.payload.sub.login : "Anon")
-// })
+
+
+
+
+
 
 
 const gqlRootCats = () =>
@@ -428,7 +433,7 @@ gql(
     }
 )
 
-const gqlFullRegister = (login, password) =>
+const  gqlFullRegister = (login, password) =>
 gql(
     "http://shop-roles.node.ed.asmer.org.ua/graphql",
     `
@@ -440,8 +445,8 @@ gql(
     }`,
     {
         "newUser": {
-            "login": JSON.stringify(login),
-            "password": JSON.stringify(password)
+            "login": login,
+            "password": password
         }
     }
 )
@@ -454,8 +459,8 @@ gql(
         login(login: $login, password: $password)
     }`,
     {
-        "login": JSON.stringify(login),
-        "password": JSON.stringify(password)
+        "login": login,
+        "password": password
     }
 )
 
@@ -506,7 +511,22 @@ const actionGoodById = (_id) =>
 
 const actionFullRegister = (login, password) => actionPromise('fullRegister', gqlFullRegister(login, password))
 
-const actionFullLogin = (login, password) => actionPromise('fullLogin', gqlFullLogin(login, password))
+const actionLogin = (login, password) => actionPromise('fullLogin', gqlFullLogin(login, password))
+
+const actionFullLogin = (login, password) => async dispatch => {
+    try {
+        const token = await dispatch(actionLogin(login, password));
+        console.log(token)
+        
+        if (typeof token === 'string') {
+            dispatch(actionAuthLogin(token));
+        } else {
+            console.error('Oтримано не вірний ТОКІН')
+        }
+    } catch (error) {
+        console.error('Помилка під час входу:', error);
+    }
+}
 
 const actionOrderFind= (_id) => actionPromise('orderFind', gqlOrderFind(_id))
 
@@ -635,37 +655,37 @@ store.subscribe(() => {
 
 
 
-document.getElementById('loginButton').addEventListener('click', async () => {
-    const username = document.getElementById('username').value;
-    const password = document.getElementById('password').value;
+// document.getElementById('loginButton').addEventListener('click', async () => {
+//     const username = document.getElementById('username').value;
+//     const password = document.getElementById('password').value;
 
-    // try {
-    //     const data = await actionFullLogin(username, password); // Викликати дію для логіну
-    //     if (data && data.token) {
-    //         console.log('Успішний вхід:', data.token);
-    //         // Додайте обробник подій для успішного входу, наприклад, перенаправлення користувача на іншу сторінку або оновлення даних в інтерфейсі
+//     // try {
+//     //     const data = await actionFullLogin(username, password); // Викликати дію для логіну
+//     //     if (data && data.token) {
+//     //         console.log('Успішний вхід:', data.token);
+//     //         // Додайте обробник подій для успішного входу, наприклад, перенаправлення користувача на іншу сторінку або оновлення даних в інтерфейсі
             
-    //     } else {
-    //         console.log('Не вдалося увійти. Перевірте ваші дані та спробуйте знову.');
-    //     }
-    // } catch (error) {
-    //     console.error('Помилка входу:', error);
-    // }
-    try {
-        const data = await store.dispatch(actionFullLogin(username, password));
-        console.log(data); // Дійсний об'єкт користувача або дані про вхід, якщо успішно
+//     //     } else {
+//     //         console.log('Не вдалося увійти. Перевірте ваші дані та спробуйте знову.');
+//     //     }
+//     // } catch (error) {
+//     //     console.error('Помилка входу:', error);
+//     // }
+//     try {
+//         const data = await store.dispatch(actionFullLogin(username, password));
+//         console.log(data); // Дійсний об'єкт користувача або дані про вхід, якщо успішно
 
-        // Перевірка вхідних даних
-        if (data && data.token) {
-            // Відображення інформації про користувача у вашому інтерфейсі
-            document.getElementById('login').innerHTML = `Ви увійшли як: ${data.payload.sub.login}`;
-        } else {
-            console.error("Не вдалося отримати токен або дані користувача");
-        }
-    } catch (error) {
-        console.error(error); // Обробка помилок
-    }
-});
+//         // Перевірка вхідних даних
+//         if (data && data.token) {
+//             // Відображення інформації про користувача у вашому інтерфейсі
+//             document.getElementById('login').innerHTML = `Ви увійшли як: ${data.payload.sub.login}`;
+//         } else {
+//             console.error("Не вдалося отримати токен або дані користувача");
+//         }
+//     } catch (error) {
+//         console.error(error); // Обробка помилок
+//     }
+// });
 
 // const loginForm = document.getElementById("login");
 // loginForm.addEventListener("submit", async (event) => {
@@ -727,9 +747,50 @@ window.onhashchange = () => {
         login(){
             console.log('А ТУТ ЩА ДОЛЖНА БЫТЬ ФОРМА ЛОГИНА')
             //нарисовать форму логина, которая по нажатию кнопки Login делает store.dispatch(actionFullLogin(login, password))
+            main.innerHTML = 
+            `
+            <input type="text" id="login" placeholder="Ваш логін">
+            <input type="text" id="password" placeholder="Ваш пароль">
+            <button id="loginButton">Увійти</button> |
+            <a href="#/register">Регістрація</a>
+            `
+
+            document.getElementById("loginButton").addEventListener('click', () => {
+                const login = document.getElementById("login").value;
+                const password = document.getElementById("password").value;
+
+                store.dispatch(actionFullLogin(login, password))
+
+            })
         },
+
         register(){
             //нарисовать форму регистрации, которая по нажатию кнопки Login делает store.dispatch(actionFullRegister(login, password))
+            main.innerHTML = 
+            `
+            <input type="text" id="loginRegister" placeholder="Створіть логін">
+            <input type="text" id="passwordRegister" placeholder="Створіть пароль">
+            <button id="registerButton">Зареєструватись</button>
+            `
+
+            document.getElementById("registerButton").addEventListener('click', () => {
+                const login = document.getElementById("loginRegister").value;
+                const password = document.getElementById("passwordRegister").value;
+
+                store.dispatch(actionFullLogin(login, password))
+
+            })
+        },
+
+        logout(){
+            console.log('А ТУТ ЩА ДОЛЖНА БЫТЬ вихід')
+
+            if (confirm("Хочете вийти?")) {
+                store.dispatch(actionAuthLogout())
+                location.hash = "#"
+            } else {
+                location.hash = "/login"
+            }
         },
     }
 
@@ -741,5 +802,7 @@ window.onhashchange = () => {
 window.onhashchange()
 
 
-
+store.subscribe(() => {
+    loginName.innerHTML = ("token" in store.getState().auth ? store.getState().auth.payload.sub.login : "Не зареєстрованний абонент")
+})
 
