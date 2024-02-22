@@ -787,9 +787,9 @@ window.onhashchange = () => {
 
             if (confirm("Хочете вийти?")) {
                 store.dispatch(actionAuthLogout())
-                location.hash = "#"
-            } else {
                 location.hash = "/login"
+            } else {
+                location.hash = ""
             }
         },
     }
