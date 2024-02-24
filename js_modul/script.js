@@ -257,19 +257,10 @@ const drawCategory = () => {
         for (const {_id, name, price, images} of goods) {
             main.innerHTML += `<div>
             <a href = "#/good/${_id}">${name}</a>
-            <div><img style= "max-width:50vw" src="http://shop-roles.node.ed.asmer.org.ua/${images && images[0] && images[0].url}"></div>
+            <div><img style= "max-width:30vw" src="http://shop-roles.node.ed.asmer.org.ua/${images && images[0] && images[0].url}"></div>
             <p>Цена: ${price}</p>
             </div>`
         }
-        // const {name, mass, eye_color, films} = payload
-        // main.innerHTML = `<h1>${name}</h1>
-        //                  <section>ЖЫРНОСТЬ: ${mass}кг</section>
-        //                  <section style="color: ${eye_color}">Цвет глаз</section>
-        //                  `
-        // for (const filmUrl of films){
-        //     const filmId = filmUrl.split('/films/')[1].slice(0,-1)
-        //     main.innerHTML += `<a href="#/films/${filmId}">Фильм №${filmId}</a>`
-        // }
     }
 }
 
@@ -289,10 +280,24 @@ store.subscribe(() => {
         <h3>${name}</h3>
         <p>${description}</p>
         <p>${price}</p>
+        <button id="cartButton">Додати у кошик</button>
+
         `
         for (const {url} of images || [] ) {
             main.innerHTML += `<div><img style= "max-width:20vw" src="http://shop-roles.node.ed.asmer.org.ua/${url}"></div>`
         }
+
+        
+    document.getElementById("cartButton").addEventListener('click', () => {
+        const good = { _id, name, price};
+        const count = 1; 
+        store.dispatch(actionCartAdd(good, count))
+        // localStorage.setItem('cartIcon', JSON.stringify(store.getState().cart));
+    });
+
+
+
+
         // const {title, opening_crawl, characters} = payload
         // main.innerHTML = `<h1>${title}</h1>
         //                  <p>${opening_crawl}</p>
@@ -509,14 +514,29 @@ const actionGoodById = (_id) =>
 
 
 
-const actionFullRegister = (login, password) => actionPromise('fullRegister', gqlFullRegister(login, password))
+const actionRegister = (login, password) => actionPromise('fullRegister', gqlFullRegister(login, password))
 
 const actionLogin = (login, password) => actionPromise('fullLogin', gqlFullLogin(login, password))
+
+const actionFullRegister = (login, password) => async (dispatch) => {
+    try {
+        const response = await dispatch(actionRegister(login, password));
+        console.log('response from registration:', response);
+
+        if (response.UserUpsert !== null) {
+            await dispatch(actionFullLogin(login, password));
+        } else {
+            console.error('Помилка при регестрації:', response.error);
+        }
+    } catch (error) {
+        console.error('Помилка при регестрації:', error);
+    }
+}
 
 const actionFullLogin = (login, password) => async dispatch => {
     try {
         const token = await dispatch(actionLogin(login, password));
-        console.log(token.data.login)
+        // console.log(token.data.login)
         
         if (typeof token.data.login === 'string') {
             store.dispatch(actionAuthLogin(token.data.login));
@@ -542,7 +562,7 @@ function cartReducer(state={}, action) {
                 ...state,
                 [good._id]: {
                     ...state[good._id], 
-                    count: state[good._id].count = count,
+                    count: state[good._id].count + count,
                     good
                 }
             }
@@ -559,7 +579,7 @@ function cartReducer(state={}, action) {
                 ...state,
                 [good._id]: {
                     ...state[good._id], 
-                    count: state[good._id].count = count,
+                    count: state[good._id].count - count,
                     good
                 }
             }
@@ -631,16 +651,219 @@ const actionCartClear = () => ({type: 'CART_CLEAR'})
 
 store.subscribe(() => {
     console.log('State updated:', store.getState().cart);
+    const {cart} = store.getState()
+    let count = 0
+
+    for (const _id in cart) {
+        console.log(_id, cart[_id].count, count)
+        count += cart[_id].count
+    }
+    
+    cartIcon.innerHTML = `<h3>Кошик: ${count}</h3>`
+    
 });
 
+// {
+//     "6408bf99d5e3301cba63a5aa": {
+//         "count": 2,
+//         "good": {
+//             "_id": "6408bf99d5e3301cba63a5aa",
+//             "name": "Ороситель Verto регулированный 16 отверстий до 336 м²",
+//             "price": 565
+//         }
+//     },
+//     "62d403fbb74e1f5f2ec1a12a": {
+//         "count": 1,
+//         "good": {
+//             "_id": "62d403fbb74e1f5f2ec1a12a",
+//             "name": "Виски Glengoyne 50yo 0,725 л",
+//             "price": 1250
+//         }
+//     }
+// }
+
+
+window.onhashchange = () => {
+    const [,route, _id] = location.hash.split('/')
+
+    const routes = {
+        // people(){
+        //     console.log('People', _id)
+        //     store.dispatch(actionGetPeople(_id))
+        // },
+        // films(){
+        //     store.dispatch(actionGetFilm(_id))
+        // },
+        category() {
+            console.log("категория:", _id)
+            store.dispatch(actionCategoryById(_id))
+        },
+        good(){
+            //тут был store.dispatch goodById
+            console.log('good', _id)
+            store.dispatch(actionGoodById(_id))
+        },
+        login(){
+            console.log('А ТУТ ЩА ДОЛЖНА БЫТЬ ФОРМА ЛОГИНА')
+            //нарисовать форму логина, которая по нажатию кнопки Login делает store.dispatch(actionFullLogin(login, password))
+            main.innerHTML = 
+            `
+            <input type="text" id="login" placeholder="Ваш логін">
+            <input type="password" id="password" placeholder="Ваш пароль">
+            <button id="loginButton">Увійти</button> |
+            <a href="#/register">Регістрація</a>
+            `
+
+            document.getElementById("loginButton").addEventListener('click', () => {
+                const login = document.getElementById("login").value;
+                const password = document.getElementById("password").value;
+
+                store.dispatch(actionFullLogin(login, password))
+
+                clearInputs('login', 'password');
+                redirectToHome();
+            })
+
+            
+        },
+
+        register(){
+            //нарисовать форму регистрации, которая по нажатию кнопки Login 
+            // делает store.dispatch(actionFullRegister(login, password))
+            main.innerHTML = 
+            `
+            <input type="text" id="loginRegister" placeholder="Створіть логін">
+            <input type="password" id="passwordRegister" placeholder="Створіть пароль">
+            <button id="registerButton">Зареєструватись</button>
+            `
+
+            document.getElementById("registerButton").addEventListener('click', () => {
+                const login = document.getElementById("loginRegister").value;
+                const password = document.getElementById("passwordRegister").value;
+
+                store.dispatch(actionFullRegister(login, password))
+
+                clearInputs("loginRegister", "passwordRegister");
+                redirectToHome();
+            })
+
+            
+        },
+
+        loguot(){
+            console.log('А ТУТ ЩА ДОЛЖНА БЫТЬ вихід')
+
+            if (confirm("Хочете вийти?")) {
+                store.dispatch(actionAuthLogout())
+                location.hash = "/login"
+            } else {
+                location.hash = ""
+            }
+        },
+    }
+
+    if (route in routes){
+        routes[route]()
+    }
+}
+
+window.onhashchange()
+
+
+store.subscribe(() => {
+    loginName.innerHTML = ("token" in store.getState().auth ? `Абонент з логіном: <b>${store.getState().auth.payload.sub.login}</b>` : "Абонент: НЕ зареєстрований")
+})
+
+
+
+// Щоб після логінізації очистити поля вводу та перенаправитися на домашню сторінку
+
+// Функція для очищення полів вводу
+// function clearInputs(login, password) {
+//     document.getElementById('login').value = ''; // Очистити поле для логіну
+//     document.getElementById('password').value = ''; // Очистити поле для пароля
+// }
+
+function clearInputs(...inputIds) {
+    inputIds.forEach(id => {
+        document.getElementById(id).value = ''; // Очистити значення поля вводу за ідентифікатором
+    });
+}
+
+// Функція для перенаправлення на домашню сторінку
+function redirectToHome() {
+    console.log('головна сторінка')
+    location.hash = "/category"; // Перенаправитися на домашню сторінку
+}
+
+
+
+
+
+// document.getElementById("cartButton").addEventListener('click', () => {
+//     const good = { _id, name, price};
+//     const count = 1; 
+//     store.dispatch(actionCartAdd(good, count))
+//     localStorage.setItem('cartIcon', JSON.stringify(store.getState().cart));
+// });
+
+
+
+
+
+
+// document.getElementById('cartButton').forEach(button => {
+//     button.addEventListener('click', () => {
+//         // Отримання даних про товар, який додається у кошик, наприклад, назва і ціна
+//         const good = button.closest('good');
+//         const productName = product.querySelector('h3').textContent;
+//         const productPrice = parseFloat(product.querySelector('p').textContent.replace('Ціна: $', ''));
+
+//         // Виклик функції для додавання товару у кошик
+//         addToCart(productName, productPrice);
+
+//     });
+// });
+
+
+// для оновлення корзини при змінах в Redux store
+store.subscribe(() => {
+    console.log('State updated:', store.getState().cart);
+    const cartItems = store.getState().cart || {}; // Отримання даних про товари в корзині з Redux store
+    const cartItemsList = document.getElementById("cartItems"); // Отримання списку товарів в корзині з DOM
+    let totalPrice = 0; // Змінна для підрахунку загальної вартості товарів в корзині
+
+    // Очищення вмісту корзини перед оновленням
+    cartItemsList.innerHTML = '';
+
+    // Додавання кожного товару до корзини
+    Object.values(cartItems).forEach(item => {
+        const { good, count } = item;
+        const listItem = document.createElement('li'); // Створення нового елементу списку для товару
+        listItem.textContent = `${good.name} x${count} - ${good.price} грн`; // Встановлення текстового вмісту елементу списку
+        cartItemsList.appendChild(listItem); // Додавання елементу до списку товарів в корзині
+        totalPrice += good.price * count; // Підрахунок загальної вартості товарів у корзині
+    });
+
+    // Оновлення загальної вартості товарів у корзині
+    const totalPriceElement = document.getElementById("totalPrice");
+    totalPriceElement.textContent = `Загальна вартість: ${totalPrice} грн`;
+});
+
+// document.getElementById('#cartButton').addEventListener('click', () => {
+//     const good = document.getElementById("good").value;
+//     store.dispatch(actionCartAdd(good))
+
+//     localStorage.setItem('cartIcon', JSON.stringify(store.getState().cart));
+// })
 
 
 
 
 // Додати товар у корзину
-// store.dispatch(actionCartAdd(good));
+// store.dispatch(actionCartAdd(good, count));
 
-// // Видалити товар з корзини
+// // // Видалити товар з корзини
 // store.dispatch(actionCartDel(good));
 
 // // Зменшити кількість товару в корзині
@@ -651,6 +874,19 @@ store.subscribe(() => {
 
 // // Очистити корзину
 // store.dispatch(actionCartClear());
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -717,92 +953,3 @@ store.subscribe(() => {
 //         console.log("Користувач неавтентифікований");
 //     }
 // };
-
-
-
-
-
-
-
-window.onhashchange = () => {
-    const [,route, _id] = location.hash.split('/')
-
-    const routes = {
-        // people(){
-        //     console.log('People', _id)
-        //     store.dispatch(actionGetPeople(_id))
-        // },
-        // films(){
-        //     store.dispatch(actionGetFilm(_id))
-        // },
-        category() {
-            console.log("категория:", _id)
-            store.dispatch(actionCategoryById(_id))
-        },
-        good(){
-            //тут был store.dispatch goodById
-            console.log('good', _id)
-            store.dispatch(actionGoodById(_id))
-        },
-        login(){
-            console.log('А ТУТ ЩА ДОЛЖНА БЫТЬ ФОРМА ЛОГИНА')
-            //нарисовать форму логина, которая по нажатию кнопки Login делает store.dispatch(actionFullLogin(login, password))
-            main.innerHTML = 
-            `
-            <input type="text" id="login" placeholder="Ваш логін">
-            <input type="text" id="password" placeholder="Ваш пароль">
-            <button id="loginButton">Увійти</button> |
-            <a href="#/register">Регістрація</a>
-            `
-
-            document.getElementById("loginButton").addEventListener('click', () => {
-                const login = document.getElementById("login").value;
-                const password = document.getElementById("password").value;
-
-                store.dispatch(actionFullLogin(login, password))
-
-            })
-        },
-
-        register(){
-            //нарисовать форму регистрации, которая по нажатию кнопки Login делает store.dispatch(actionFullRegister(login, password))
-            main.innerHTML = 
-            `
-            <input type="text" id="loginRegister" placeholder="Створіть логін">
-            <input type="text" id="passwordRegister" placeholder="Створіть пароль">
-            <button id="registerButton">Зареєструватись</button>
-            `
-
-            document.getElementById("registerButton").addEventListener('click', () => {
-                const login = document.getElementById("loginRegister").value;
-                const password = document.getElementById("passwordRegister").value;
-
-                store.dispatch(actionFullLogin(login, password))
-
-            })
-        },
-
-        loguot(){
-            console.log('А ТУТ ЩА ДОЛЖНА БЫТЬ вихід')
-
-            if (confirm("Хочете вийти?")) {
-                store.dispatch(actionAuthLogout())
-                location.hash = "/login"
-            } else {
-                location.hash = ""
-            }
-        },
-    }
-
-    if (route in routes){
-        routes[route]()
-    }
-}
-
-window.onhashchange()
-
-
-store.subscribe(() => {
-    loginName.innerHTML = ("token" in store.getState().auth ? `Користувач з логіном: ${store.getState().auth.payload.sub.login}` : "Не зареєстрованний абонент")
-})
-
