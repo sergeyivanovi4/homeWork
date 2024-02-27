@@ -497,7 +497,24 @@ gql(
     {
         "q1": JSON.stringify[{_id}]
     }
+)
 
+const gqlOrder = (_id) =>
+gql(
+    "http://shop-roles.node.ed.asmer.org.ua/graphql",
+    `
+    mutation newOrder($o:OrderInput){
+        OrderUpsert(order:$o){
+          _id orderGoods{
+            good{_id name}
+            count
+            total
+          }
+        }
+    }`,
+    {
+        "o": JSON.stringify[{_id, count}]
+    }
 )
 
 const actionRootCats = () =>
@@ -550,6 +567,27 @@ const actionFullLogin = (login, password) => async dispatch => {
 
 const actionOrderFind= (_id) => actionPromise('orderFind', gqlOrderFind(_id))
 
+// const actionOrder= (_id) => actionPromise('order', gqlOrder(_id))
+
+
+// const actionNewOrder = (_id) => async dispatch => {
+//     try {
+//         const cartItems = store.getState() || {};
+//         const orderedGoods = Object.values(cartItems).map(item => ({
+//             good_id: item.good._id,
+//             quantity: item.count
+//         }));        
+//          console.log(cartItems)
+        
+//         if (true) {
+//             store.dispatch(actionOrder(_id));
+//         } else {
+//             console.error('Oтримано не вірний ТОКІН')
+//         }
+//     } catch (error) {
+//         console.error('Помилка під час входу:', error);
+//     }
+// }
 
 
 
@@ -574,12 +612,21 @@ function cartReducer(state={}, action) {
     }
 
     if (type === 'CART_SUB' && state[good._id]) {
-        if (state[good._id].count = count) {
+        if (state[good._id].count > 1) {
             return {
                 ...state,
                 [good._id]: {
                     ...state[good._id], 
                     count: state[good._id].count - count,
+                    good
+                }
+            }
+        } else {
+            return {
+                ...state,
+                [good._id]: {
+                    ...state[good._id], 
+                    count: state[good._id].count,
                     good
                 }
             }
@@ -650,13 +697,18 @@ const actionCartClear = () => ({type: 'CART_CLEAR'})
 // Підписка на зміни стану корзини:
 
 store.subscribe(() => {
-    console.log('State updated:', store.getState().cart);
+    console.log('State updated:', store.getState());
     const {cart} = store.getState()
     let count = 0
 
     for (const _id in cart) {
-        console.log(_id, cart[_id].count, count)
-        count += cart[_id].count
+        // if (store.getState().auth !== 'string') {
+        //     alert("Ви не зареєстровані або не увійшли в кабінет")
+        // } else {
+            console.log(_id, cart[_id].count, count)
+            count += cart[_id].count
+            
+        // }
     }
     
     cartIcon.innerHTML = `<h3>Кошик: ${count}</h3>`
@@ -838,17 +890,182 @@ store.subscribe(() => {
 
     // Додавання кожного товару до корзини
     Object.values(cartItems).forEach(item => {
-        const { good, count } = item;
+        const { good, count, images} = item;
         const listItem = document.createElement('li'); // Створення нового елементу списку для товару
+
         listItem.textContent = `${good.name} x${count} - ${good.price} грн`; // Встановлення текстового вмісту елементу списку
+
+        // Створення кнопок для додавання, віднімання та видалення товару
+        const addButton = document.createElement('button');
+        addButton.textContent = '+';
+        addButton.style.marginLeft = '20px';
+        // addButton.style.backgroundColor = 'green'; // Зелений фон
+        // addButton.style.color = 'white'; // Білий колір тексту
+        // addButton.style.border = 'none'; // Відсутність межі
+        // addButton.style.padding = '5px 10px'; // Відступи
+        // listItem.style.maxWidth ='500px';
+        // listItem.style.display ='flex';
+        // listItem.style.justifyContent ='space-between';
+
+        addButton.addEventListener('click', () => {
+            store.dispatch(actionCartAdd(good)); // Додати товар у корзину
+        });
+        listItem.appendChild(addButton);
+
+        const subtractButton = document.createElement('button');
+        subtractButton.textContent = '-';
+        subtractButton.addEventListener('click', () => {
+            store.dispatch(actionCartSub(good)); // Відняти товар з корзини
+        });
+        listItem.appendChild(subtractButton);
+
+        const deleteButton = document.createElement('button');
+        deleteButton.textContent = 'X';
+        deleteButton.addEventListener('click', () => {
+            store.dispatch(actionCartDel(good)); // Видалити товар з корзини
+        });
+        listItem.appendChild(deleteButton);
+
         cartItemsList.appendChild(listItem); // Додавання елементу до списку товарів в корзині
+        
         totalPrice += good.price * count; // Підрахунок загальної вартості товарів у корзині
+
+
+        
     });
 
     // Оновлення загальної вартості товарів у корзині
     const totalPriceElement = document.getElementById("totalPrice");
     totalPriceElement.textContent = `Загальна вартість: ${totalPrice} грн`;
+
+    
+    const checkoutButton = document.createElement('button');
+    checkoutButton.textContent = 'Оформити замовлення';
+    // checkoutButton.style.backgroundColor = 'blue'; // Синій фон
+    // checkoutButton.style.color = 'white'; // Білий текст
+    // checkoutButton.style.border = 'none'; // Відсутня межа
+    checkoutButton.style.padding = '5px 10px'; // Відступи
+    checkoutButton.style.marginLeft = '20px';
+
+
+
+
+
+
+    // Створення дії для оформлення замовлення
+    const actionOrder = () => {
+    // Отримання списку товарів з корзини з Redux store
+    const cartItems = store.getState().cart || {};
+    const orderedGoods = Object.values(cartItems).map(item => ({
+        good_id: item.good._id,
+        quantity: item.count
+    }));
+
+    const o = { orderGoods: [] };
+
+    // for (let i = 0; i < 10; i++) { 
+    //     o.orderGoods.push({
+    //         count: i + 1, 
+    //         good: { _id: `тут_ідентифікатор_товару_${i + 1}` } 
+    //     });
+    // }
+
+        // Цикл для додавання товарів з кошика до об'єкту o
+        orderedGoods.forEach(item => {
+            o.orderGoods.push({
+                count: item.quantity, // Кількість товару
+                good: { _id: item.good_id } // Об'єкт товару з його _id
+            });
+        });
+
+        
+    // Підготовка даних для відправки на сервер
+    const orderData = {
+        goods: orderedGoods
+    };
+
+    // Відправка даних на сервер за допомогою AJAX запиту
+    return fetch('http://shop-roles.node.ed.asmer.org.ua/graphql', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'Accept': 'application/json',
+
+        },
+        body: JSON.stringify({
+            query: `
+            mutation newOrder($o:OrderInput){
+                OrderUpsert(order:$o){
+                  _id orderGoods{
+                    good{_id name}
+                    count
+                    total
+                  }
+                }
+              }
+            `,
+            variables: {
+                // 'o': {
+                //     'orderGoods': [{
+                //         'count': count,
+                //         'good': {
+                //             '_id': _id
+                //         }, 
+                //     }]                
+                // }
+                "o": o
+            }
+            
+        })
+    })
+    .then(response => {
+        if (!response.ok) {
+            throw new Error('Не вдалося оформити замовлення');
+        }
+        // Очистка корзини після успішного оформлення замовлення
+        store.dispatch(actionCartClear());
+        alert('Замовлення успішно оформлено!');
+    })
+    .catch(error => {
+        console.error('Помилка оформлення замовлення:', error.message);
+        alert('Виникла помилка під час оформлення замовлення');
+    });
+
+    
+};
+
+
+    checkoutButton.addEventListener('click', () => {
+        store.dispatch(actionOrder());
+    });
+    
+    // store.dispatch(actionNewOrder(_id))
+
+    // Додавання кнопки оформлення 
+
+    totalPriceElement.appendChild(checkoutButton);
+
+    
 });
+
+
+
+
+
+localStorage.authToken = store.getState().auth.token
+
+const originalFetch = fetch;
+fetch = (url, params={headers:{}}) => { 
+    params.headers.Authorization = "Bearer " + localStorage.authToken
+    return originalFetch(url, params)
+}
+// fetch
+
+
+
+
+
+
 
 // document.getElementById('#cartButton').addEventListener('click', () => {
 //     const good = document.getElementById("good").value;
