@@ -32,7 +32,7 @@ async function gql(endpoint, query, variables) {
         headers: {
             'Content-Type': 'application/json',
             'Accept': 'application/json',
-            // ...("token" in store.getState().auth ? {Authorization: `Bearer $(store.getState().auth.token)`} : null)
+            ...("token" in store.getState().auth ? {Authorization: `Bearer ${store.getState().auth.token}`} : null)
         },
         body: JSON.stringify({
             query,
@@ -499,7 +499,7 @@ gql(
     }
 )
 
-const gqlOrder = (_id) =>
+const gqlOrder = (_id, count) =>
 gql(
     "http://shop-roles.node.ed.asmer.org.ua/graphql",
     `
@@ -517,6 +517,36 @@ gql(
     }
 )
 
+const gqlHistory = () =>
+gql(
+    "http://shop-roles.node.ed.asmer.org.ua/graphql",
+    `
+    query myHistory {
+        OrderFind(query:"[{}]"){
+            _id
+            total
+            createdAt
+            orderGoods{
+            good{
+                _id
+                name
+                price
+                description
+                images{
+                    url
+                }
+            }
+            count
+            total
+           }
+          total 
+        }
+    }`
+)
+
+
+
+
 const actionRootCats = () =>
     actionPromise('rootCats', gqlRootCats())
 
@@ -527,6 +557,64 @@ const actionCategoryById = (_id) =>
 
 const actionGoodById = (_id) =>
     actionPromise('goodById', gqlGoodById(_id))
+
+
+const actionHistory = () =>
+    actionPromise('history', gqlHistory())
+
+
+
+store.subscribe(() => {
+    console.log('State updated:', store.getState().cart);
+
+    const [,route] = location.hash.split('/')
+    if (route !== 'history') return
+
+    const {status, payload, error} = store.getState().promise.history || {}
+    if (status === 'PENDING'){
+        main.innerHTML = `<img src='https://cdn.dribbble.com/users/63485/screenshots/1309731/infinite-gif-preloader.gif' />`
+    }
+    if (status === 'FULFILLED'){
+        if (status === 'FULFILLED'){
+            const orders = payload.data.OrderFind; // Отримання списку замовлень з payload
+
+            // Сортування замовлень в оберненому порядку за датою створення
+            orders.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+
+            // Створення HTML для відображення історії покупок
+            const historyHTML = orders.map(order => {
+                const { _id, total, images, createdAt, orderGoods } = order;
+
+
+            // Створення HTML для кожного замовлення
+            const orderHTML = `
+                <div class="order">
+                    <div class="order-goods">
+                        ${orderGoods.map(good => `
+                            <div class="good">
+                                <div>Дата замовлення: ${Date(createdAt).toLocaleString()}</div>
+
+                                <a href="#/good/${good.good._id}">Назва товару: ${good.good.name}</a>
+                                <div>Ціна: ${good.good.price} грн</div>
+                                <div>Кількість: ${good.count} шт.</div>
+                                <div>Загальна вартість: ${good.total} грн</div>
+                                <div><img style= "max-width:5vw" src="http://shop-roles.node.ed.asmer.org.ua/${images && images[0] && images[0].url}"></div>
+                            </div>
+
+                            <br>
+                        `).join('')}
+                    </div>
+                </div>
+            `;
+
+            return orderHTML;
+        }).join('');
+
+    // Відображення історії покупок на сторінці
+    main.innerHTML = historyHTML;
+    }
+}
+})
 
 
 
@@ -803,7 +891,7 @@ window.onhashchange = () => {
         },
 
         loguot(){
-            console.log('А ТУТ ЩА ДОЛЖНА БЫТЬ вихід')
+            console.log('А ТУТ ЩА повинен буди вихід')
 
             if (confirm("Хочете вийти?")) {
                 store.dispatch(actionAuthLogout())
@@ -812,6 +900,15 @@ window.onhashchange = () => {
                 location.hash = ""
             }
         },
+
+        history() {
+            console.log('А ТУТ ЩА повинна буть історія замовленнь')
+            main.innerHTML = 
+            `
+            <h2>Історія замовлень:</h2>
+            `
+            store.dispatch(actionHistory())
+        }
     }
 
     if (route in routes){
@@ -980,9 +1077,9 @@ store.subscribe(() => {
 
         
     // Підготовка даних для відправки на сервер
-    const orderData = {
-        goods: orderedGoods
-    };
+    // const orderData = {
+    //     goods: orderedGoods
+    // };
 
     // Відправка даних на сервер за допомогою AJAX запиту
     return fetch('http://shop-roles.node.ed.asmer.org.ua/graphql', {
@@ -990,6 +1087,7 @@ store.subscribe(() => {
         headers: {
             'Content-Type': 'application/json',
             'Accept': 'application/json',
+            ...("token" in store.getState().auth ? {Authorization: `Bearer ${store.getState().auth.token}`} : null)
 
         },
         body: JSON.stringify({
@@ -1036,7 +1134,11 @@ store.subscribe(() => {
 
 
     checkoutButton.addEventListener('click', () => {
-        store.dispatch(actionOrder());
+        if (store.getState().auth.token !== undefined) {
+            store.dispatch(actionOrder());
+        } else {
+            alert("Вибачте, але для замолення товара необхідно залогінитись")
+        }
     });
     
     // store.dispatch(actionNewOrder(_id))
@@ -1052,13 +1154,13 @@ store.subscribe(() => {
 
 
 
-localStorage.authToken = store.getState().auth.token
+// localStorage.authToken = store.getState().auth.token
 
-const originalFetch = fetch;
-fetch = (url, params={headers:{}}) => { 
-    params.headers.Authorization = "Bearer " + localStorage.authToken
-    return originalFetch(url, params)
-}
+// const originalFetch = fetch;
+// fetch = (url, params={headers:{}}) => { 
+//     params.headers.Authorization = "Bearer " + localStorage.authToken
+//     return originalFetch(url, params)
+// }
 // fetch
 
 
