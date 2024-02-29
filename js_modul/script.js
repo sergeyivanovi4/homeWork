@@ -26,69 +26,6 @@
 // const gql = getGQL("http://shop-roles.node.ed.asmer.org.ua/graphql")
 
 
-async function gql(endpoint, query, variables) {
-    const options = {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-            'Accept': 'application/json',
-            ...("token" in store.getState().auth ? {Authorization: `Bearer ${store.getState().auth.token}`} : null)
-        },
-        body: JSON.stringify({
-            query,
-            variables
-        })
-    };
-
-    try {
-        const response = await fetch(endpoint, options);
-        const data = await response.json();
-        return data;
-    } catch (error) {
-        throw new Error(`GraphQL request failed: ${error}`);
-    }
-}
-
-
-const endpoint = "http://shop-roles.node.ed.asmer.org.ua/graphql";
-const query = `
-    query cats($q: String){
-        CategoryFind(query: $q){
-            _id
-            name
-        }
-    }
-`;
-const variables = {
-    q: "[{}]"       // \\"parent\\": null ??
-};
-
-gql(endpoint, query, variables)
-    .then(data => console.log(data))
-    .catch(error => console.error(error));
-
-
-
-
-
-function jwtDecode(token) {
-    try {
-        // if (token && token.split(".").length === 3) {
-        //     const tokenArr = token.split(".")
-        //     const decodedToken = atob(tokenArr[1])
-        //     const payload = JSON.parse(decodedToken)
-        //     return payload
-        // }
-        // return undefined
-        return JSON.parse(atob (token.split(".")[1]))
-    } catch(error) {
-        return undefined
-    }
-}
-
-
-
-
 function createStore(reducer){
     let state       = reducer(undefined, {}) //стартовая инициализация состояния, запуск редьюсера со state === undefined
     let cbs         = []                     //массив подписчиков
@@ -158,30 +95,67 @@ const reducers = {
 
 const totalReducer = combineReducers(reducers) 
 
-// function promiseReducer(state={}, {type, status, payload, error}){
-//     if (type === 'PROMISE'){
-//         //имена добавить
-//         return {status, payload, error}
-//     }
-//     return state
-// }
-// //имена добавить
-// const actionPending   = ()      => ({type: 'PROMISE', status: 'PENDING'})
-// const actionFulfilled = payload => ({type: 'PROMISE', status: 'FULFILLED', payload})
-// const actionRejected  = error   => ({type: 'PROMISE', status: 'REJECTED',  error})
 
-// //имена добавить
-// const actionPromise = promise =>
-//     async dispatch => { 
-//         dispatch(actionPending()) //сигнализируем redux, что промис начался
-//         try{
-//             const payload = await promise //ожидаем промиса
-//             dispatch(actionFulfilled(payload)) //сигнализируем redux, что промис успешно выполнен
-//             return payload //в месте запуска store.dispatch с этим thunk можно так же получить результат промиса
-//         }
-//         catch (error){
-//             dispatch(actionRejected(error)) //в случае ошибки - сигнализируем redux, что промис несложился
-//         }
+const endpoint = "http://shop-roles.node.ed.asmer.org.ua/graphql";
+const query = `
+    query cats($q: String){
+        CategoryFind(query: $q){
+            _id
+            name
+        }
+    }
+`;
+const variables = {
+    q: "[{}]"       // \\"parent\\": null ??
+};
+
+const store = createStore(totalReducer) //не забудьте combineReducers если он у вас уже есть
+store.subscribe(() => console.log(store.getState()))
+
+async function gql(endpoint, query, variables) {
+    const options = {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'Accept': 'application/json',
+            ...("token" in store.getState().auth ? {Authorization: `Bearer ${store.getState().auth.token}`} : null)
+        },
+        body: JSON.stringify({
+            query,
+            variables
+        })
+    };
+
+    try {
+        const response = await fetch(endpoint, options);
+        const data = await response.json();
+        return data;
+    } catch (error) {
+        throw new Error(`GraphQL request failed: ${error}`);
+    }
+}
+
+gql(endpoint, query, variables)
+    .then(data => console.log(data))
+    .catch(error => console.error(error));
+
+
+
+
+
+function jwtDecode(token) {
+    try {
+        return JSON.parse(atob (token.split(".")[1]))
+    } catch(error) {
+        return undefined
+    }
+}
+
+
+
+
+
+
 
 function promiseReducer(state={}, action){
     const {namePromise, type, status, payload, error} = action
@@ -239,9 +213,7 @@ const actionAuthLogout = ()    => ({type: 'AUTH_LOGOUT'})
 
 
 
-const store = createStore(totalReducer) //не забудьте combineReducers если он у вас уже есть
 
-store.subscribe(() => console.log(store.getState()))
 
 const drawCategory = () => {
     const [,route] = location.hash.split('/')
@@ -577,34 +549,40 @@ store.subscribe(() => {
     if (status === 'FULFILLED'){
         if (status === 'FULFILLED'){
             const orders = payload.data.OrderFind; // Отримання списку замовлень з payload
-
+            let orderNuber = orders.length;
             // Сортування замовлень в оберненому порядку за датою створення
-            orders.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+            orders.sort((a, b) => new Date(+b.createdAt) - new Date(+a.createdAt));
 
             // Створення HTML для відображення історії покупок
             const historyHTML = orders.map(order => {
+                let goodNumber = 1;
                 const { _id, total, images, createdAt, orderGoods } = order;
-
 
             // Створення HTML для кожного замовлення
             const orderHTML = `
+            <div><b>Номер замовлення: №${orderNuber--}</b></div>
+            <div>Дата замовлення: ${ new Date(+createdAt).toLocaleString()}</div>
+            <br>
                 <div class="order">
                     <div class="order-goods">
                         ${orderGoods.map(good => `
                             <div class="good">
-                                <div>Дата замовлення: ${Date(createdAt).toLocaleString()}</div>
+                                <a href="#/good/${good.good._id}">#${goodNumber++} товар: ${good.good.name}</a>
 
-                                <a href="#/good/${good.good._id}">Назва товару: ${good.good.name}</a>
+                                <div><img style= "max-width:5vw" src="http://shop-roles.node.ed.asmer.org.ua/${good.good.images && good.good.images[0] && good.good.images[0].url}"></div>
                                 <div>Ціна: ${good.good.price} грн</div>
                                 <div>Кількість: ${good.count} шт.</div>
-                                <div>Загальна вартість: ${good.total} грн</div>
-                                <div><img style= "max-width:5vw" src="http://shop-roles.node.ed.asmer.org.ua/${images && images[0] && images[0].url}"></div>
+                                <div>Вартість: ${good.total} грн</div>
                             </div>
-
-                            <br>
-                        `).join('')}
+                        `).join('')} 
                     </div>
+
                 </div>
+                <br>
+                <div><i>Загальна вартість всього замовлення: ${total} грн</i></div>
+                <hr>
+                <br>
+
             `;
 
             return orderHTML;
@@ -978,7 +956,7 @@ function redirectToHome() {
 // для оновлення корзини при змінах в Redux store
 store.subscribe(() => {
     console.log('State updated:', store.getState().cart);
-    const cartItems = store.getState().cart || {}; // Отримання даних про товари в корзині з Redux store
+    const cartItems = store.getState().cart; // Отримання даних про товари в корзині з Redux store
     const cartItemsList = document.getElementById("cartItems"); // Отримання списку товарів в корзині з DOM
     let totalPrice = 0; // Змінна для підрахунку загальної вартості товарів в корзині
 
@@ -1052,7 +1030,7 @@ store.subscribe(() => {
     // Створення дії для оформлення замовлення
     const actionOrder = () => {
     // Отримання списку товарів з корзини з Redux store
-    const cartItems = store.getState().cart || {};
+    const cartItems = store.getState().cart;
     const orderedGoods = Object.values(cartItems).map(item => ({
         good_id: item.good._id,
         quantity: item.count
@@ -1133,13 +1111,14 @@ store.subscribe(() => {
 };
 
 
-    checkoutButton.addEventListener('click', () => {
-        if (store.getState().auth.token !== undefined) {
-            store.dispatch(actionOrder());
-        } else {
-            alert("Вибачте, але для замолення товара необхідно залогінитись")
-        }
-    });
+checkoutButton.addEventListener('click', () => {
+    const cartItems = store.getState().cart;
+    if (store.getState().auth.token !== undefined && cartItems !== undefined && Object.keys(cartItems).length > 0) {
+        store.dispatch(actionOrder());
+    } else {
+        alert("Вибачте, але для замовлення товара необхідно залогінитись або у корзині має бути хоча б один товар");
+    }
+});
     
     // store.dispatch(actionNewOrder(_id))
 
