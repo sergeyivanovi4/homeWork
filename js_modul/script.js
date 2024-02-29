@@ -560,15 +560,15 @@ store.subscribe(() => {
 
             // Створення HTML для кожного замовлення
             const orderHTML = `
-            <div><b>Номер замовлення: №${orderNuber--}</b></div>
+            <h3><b>Номер замовлення: №${orderNuber--}</b></h3>
+
             <div>Дата замовлення: ${ new Date(+createdAt).toLocaleString()}</div>
             <br>
                 <div class="order">
                     <div class="order-goods">
                         ${orderGoods.map(good => `
-                            <div class="good">
+                            <div class="good">                                
                                 <a href="#/good/${good.good._id}">#${goodNumber++} товар: ${good.good.name}</a>
-
                                 <div><img style= "max-width:5vw" src="http://shop-roles.node.ed.asmer.org.ua/${good.good.images && good.good.images[0] && good.good.images[0].url}"></div>
                                 <div>Ціна: ${good.good.price} грн</div>
                                 <div>Кількість: ${good.count} шт.</div>
@@ -579,7 +579,7 @@ store.subscribe(() => {
 
                 </div>
                 <br>
-                <div><i>Загальна вартість всього замовлення: ${total} грн</i></div>
+                <div><i>Загальна вартість всього замовлення: <b>${total} грн</b></i></div>
                 <hr>
                 <br>
 
@@ -905,11 +905,6 @@ store.subscribe(() => {
 
 // Щоб після логінізації очистити поля вводу та перенаправитися на домашню сторінку
 
-// Функція для очищення полів вводу
-// function clearInputs(login, password) {
-//     document.getElementById('login').value = ''; // Очистити поле для логіну
-//     document.getElementById('password').value = ''; // Очистити поле для пароля
-// }
 
 function clearInputs(...inputIds) {
     inputIds.forEach(id => {
@@ -923,34 +918,6 @@ function redirectToHome() {
     location.hash = "/category"; // Перенаправитися на домашню сторінку
 }
 
-
-
-
-
-// document.getElementById("cartButton").addEventListener('click', () => {
-//     const good = { _id, name, price};
-//     const count = 1; 
-//     store.dispatch(actionCartAdd(good, count))
-//     localStorage.setItem('cartIcon', JSON.stringify(store.getState().cart));
-// });
-
-
-
-
-
-
-// document.getElementById('cartButton').forEach(button => {
-//     button.addEventListener('click', () => {
-//         // Отримання даних про товар, який додається у кошик, наприклад, назва і ціна
-//         const good = button.closest('good');
-//         const productName = product.querySelector('h3').textContent;
-//         const productPrice = parseFloat(product.querySelector('p').textContent.replace('Ціна: $', ''));
-
-//         // Виклик функції для додавання товару у кошик
-//         addToCart(productName, productPrice);
-
-//     });
-// });
 
 
 // для оновлення корзини при змінах в Redux store
@@ -1119,8 +1086,6 @@ checkoutButton.addEventListener('click', () => {
         alert("Вибачте, але для замовлення товара необхідно залогінитись або у корзині має бути хоча б один товар");
     }
 });
-    
-    // store.dispatch(actionNewOrder(_id))
 
     // Додавання кнопки оформлення 
 
@@ -1142,36 +1107,6 @@ checkoutButton.addEventListener('click', () => {
 // }
 // fetch
 
-
-
-
-
-
-
-// document.getElementById('#cartButton').addEventListener('click', () => {
-//     const good = document.getElementById("good").value;
-//     store.dispatch(actionCartAdd(good))
-
-//     localStorage.setItem('cartIcon', JSON.stringify(store.getState().cart));
-// })
-
-
-
-
-// Додати товар у корзину
-// store.dispatch(actionCartAdd(good, count));
-
-// // // Видалити товар з корзини
-// store.dispatch(actionCartDel(good));
-
-// // Зменшити кількість товару в корзині
-// store.dispatch(actionCartSub(good));
-
-// // Назначити кількість товару у корзині
-// store.dispatch(actionCartSet(good, count));
-
-// // Очистити корзину
-// store.dispatch(actionCartClear());
 
 
 
