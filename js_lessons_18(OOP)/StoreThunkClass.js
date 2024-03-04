@@ -1,28 +1,11 @@
-// Переробить завдання Store на синтаксис ES6-класів:
-// class Store{
-//     #reducer;
-//     #state;
-//     #cbs = []
-    
-//     constructor(){
-        
-//     }
-    
-//     getState(){
-        
-//     }
-    
-//     subscribe(){
-        
-//     }
-    
-//     dispatch(){
-        
-//     }
-// }
-// Додайте потрібні параметри в методи, їх код, а також гетер state, який працює аналогічно getState.
-// Перевірте на кіоску, адже об'єкт, створений з цього класу буде таким же, як і об'єкт,
-//  створений createStore
+// Успадкуйте клас Store у новому класі StoreThunk. 
+// Новий клас повинен перекривати метод dispatch, перевіряти тип переданого екшона і якщо це функція, 
+// запускати її, передавши в неї this.dispatch та this.getState. Ця умова написана тут.
+//  Врахуйте, що в thunk передаються функції dispatch та getState без об'єкта до крапки, 
+//  а ці методи в класі Store є звичайними функціями, схильними до втрати this.
+//   Для прибиття this намертво до функції використовуйте метод bind. Подивитися можна тут та тут
+//  Перевірте на модульному проекті 
+
 
 function createStore(reducer){
     let state       = reducer(undefined, {}) //стартовая инициализация состояния, запуск редьюсера со state === undefined
@@ -86,5 +69,23 @@ class Store {
 
     get state() {
         return this.getState();
+    }
+}
+
+//////////////////////////
+////////////////////
+/////////////
+////
+
+class StoreThunk extends Store {
+    constructor(reducer, initialState) {
+        super(reducer, initialState);
+    }
+
+    dispatch(action) {
+        if (typeof action === 'function') {
+            return action(this.dispatch.bind(this), this.getState.bind(this));
+        }
+        return super.dispatch(action);
     }
 }
