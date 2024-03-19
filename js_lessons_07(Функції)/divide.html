@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+<body>
+    <input type='number' id="firstNumber" />
+    <input type='number' id="secondNumber" />
+    <div id="divisionResult">
+        текст в div
+    </div>
+    <!-- <script>
+        const calcResult = () => {
+            console.log(firstNumber.value, secondNumber.value, divisionResult.innerHTML)
+            divisionResult.innerHTML = "Текст в <code>div</code> поменян с помощью <strong>Javascript</strong><br/>" + Math.random()
+        }
+        
+        firstNumber.oninput = secondNumber.oninput = calcResult
+    </script> -->
+    <script>
+        const calcResult = () => {
+            const firstNumberValue = parseFloat(firstNumber.value); // Перетворення значення на число
+            const secondNumberValue = parseFloat(secondNumber.value); 
+    
+            // Перевірка, чи введено числа
+            if (!isNaN(firstNumberValue) && !isNaN(secondNumberValue) && secondNumberValue !== 0) {
+                const result = Math.floor(firstNumberValue / secondNumberValue); 
+                divisionResult.innerHTML = "Результат ділення націло: " + result;
+            } else {
+                divisionResult.innerHTML = "Введіть коректні числа та не нульовий дільник";
+            }
+        };
+        
+        firstNumber.oninput = secondNumber.oninput = calcResult;
+    </script>
+</body>
+</html>
