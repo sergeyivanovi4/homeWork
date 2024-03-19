@@ -2,21 +2,13 @@
 //  HTML-тегів у рядковій змінній. Для списків, що випадають, в HTML передбачені теги <select> і <option>
 
 
-const currencies = ["USD", "EUR", "GBP", "UAH"]
-let   str = "<select>"
-for (const currency of currencies){
-    //    YOUR MAGIC HERE
-    str += `<option>${currency}</option>`
-}
-str += "</select>"
-document.write(str) 
 
-const fromCurrency = prompt("Введіть вихідну валюту (наприклад, USD):").toUpperCase();
-const toCurrency = prompt("Введіть валюту для конвертації (наприклад, EUR):").toUpperCase();
-const amount = parseFloat(prompt("Введіть суму для конвертації:"));
+// const fromCurrency = prompt("Введіть вихідну валюту (наприклад, USD):").toUpperCase();
+// const toCurrency = prompt("Введіть валюту для конвертації (наприклад, EUR):").toUpperCase();
+// const amount = parseFloat(prompt("Введіть суму для конвертації:"));
 // parseFloat разбирает текстовую строку, ищет и возвращает из неё десятичное число.
 
-const apiUrl = `https://open.er-api.com/v6/latest/${fromCurrency}`;
+const apiUrl = `https://open.er-api.com/v6/latest/USD`;
 
 
 fetch(apiUrl).then((res) => res.json())
@@ -28,7 +20,7 @@ fetch(apiUrl).then((res) => res.json())
         }
 
         // Отримання курсу обміну
-        const exchangeRate = data.rates[toCurrency];
+        const exchangeRate = data.rates;
 
         // Перевірка, чи є валюти в списку
         if (!exchangeRate) {
@@ -36,9 +28,18 @@ fetch(apiUrl).then((res) => res.json())
             return;
         }
 
-        // Розрахунок результату конвертації
-        const result = amount * exchangeRate;
+        const currencies = Object.keys(exchangeRate);
+        let   str = "<select>"
+        for (const currency of currencies){
+            //    YOUR MAGIC HERE
+            str += `<option>${currency}</option>`
+        }
+        str += "</select>"
+        document.write(str) 
 
-        // Виведення результату
-        console.log(`${amount} ${fromCurrency} = ${result.toFixed(2)} ${toCurrency}`);
+
+        console.log(exchangeRate)
+
     })
+
+    

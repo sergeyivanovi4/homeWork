@@ -9,10 +9,10 @@ const cat = {
 }
 
 cat.anything = prompt('Введіть що завгодно:')
-cat.anything1 = prompt('Введіть і щє що завгодно:')
+
 console.log(cat)
 
 
 
-let {name, color, age, weight, ...rests} = cat
+let {anything, ...rests} = cat
 console.log(rests)

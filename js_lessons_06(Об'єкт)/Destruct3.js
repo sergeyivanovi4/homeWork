@@ -4,7 +4,9 @@ let arr = [1,2,3,4, 5,6,7,10]
 // let a = arr[0]
 // let b = arr[1]
 
-let [a, b, ...c] = arr;
+// let [a, b, ...c] = arr;
+
+let [a, b, c] = arr; // я так зрозумів - що тут без ресту треба було? чисто с = приме остаток?
 let length = arr.length
 
 console.log("a=", a)
