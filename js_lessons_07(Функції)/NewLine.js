@@ -9,6 +9,6 @@ function str(newLine) {
 }
 
 // Приклад використання:
-let string = prompt("Введіть рядок, де\\nбуде новим рядком:");
+let string = prompt("Введіть рядок, де \\n буде новим рядком:");
 let newString = str(string);
 alert(`Ваш новий текст:\n${newString}`);
