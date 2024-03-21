@@ -19,18 +19,23 @@ function walker(parent=document.body, level=0){
 
 walker()
 
+function findElementById(parent, id) {
+    try {
+        return getElementById(parent, id);
+    } catch (element) {
+        return null;
+    }
+}
 
 function getElementById(parent = document.body, id) {
     for (const child of parent.children) {
         if (child.id === id) {
-            throw child;
+            return child;
         }
-        getElementById(child, id);
+        const foundElement = getElementById(child, id);
+        if (foundElement) {
+            return foundElement;
+        }
     }
-}
-
-try {
-    getElementById(undefined, 'someId');
-} catch (element) {
-    console.log('Знайдено елемент з id:', element);
+    throw new Error(`Елемент з id '${id}' не знайдено`);
 }

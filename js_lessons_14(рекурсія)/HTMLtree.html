@@ -1,7 +1,15 @@
-// зробіть функцію, яка рекурсивно створює HTML-рядок із деревоподібної структури даних 
-// Javascript будь-якої вкладеності. Перевірте результат роботи функції виводячи HTML-рядок 
-// використовуючи document.write або ж який-то_элемент.innerHTML
-const table = {
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+<body>
+    <div id="someElementId"></div>
+
+    <script>
+        const table = {
     tagName: 'table',
     attrs: {
         border: "1",
@@ -34,8 +42,7 @@ const table = {
             ]
         }
     ]
-}
-// htmlTree(table) //поверне <table border='1' ....
+};
 
 function htmlTree(node) {
     if (!node.tagName) return '';
@@ -51,10 +58,17 @@ function htmlTree(node) {
 
     result += '>';
 
-    // Обробляємо дітей
+
     if (node.children) {
         for (let child of node.children) {
-            result += htmlTree(child);
+            if (Array.isArray(child)) {
+
+                for (let subChild of child) {
+                    result += htmlTree(subChild);
+                }
+            } else {
+                result += htmlTree(child);
+            }
         }
     }
 
@@ -64,4 +78,9 @@ function htmlTree(node) {
 }
 
 const htmlString = htmlTree(table);
-document.write(htmlString); // або document.getElementById('someElementId').innerHTML = htmlString;
+document.getElementById('someElementId').innerHTML = htmlString;
+// щось не хоче малювати!!! гад=))
+// я вже і так і сяк і в html його = а він хрена)
+    </script>
+</body>
+</html>

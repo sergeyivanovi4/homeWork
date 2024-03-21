@@ -25,10 +25,10 @@ function domTree(parent, node) {
     // Додаємо створений елемент до батьківського елемента
     parent.appendChild(element);
 
-    // Додаємо текстовий вміст (якщо є)
-    // if (node.children && node.children.length === 1 && typeof node.children[0] === 'string') {
-    //     element.textContent = node.children[0];
-    // }
+    // цей іф чогось був закомічений,того то і не працював вивод цифорок
+    if (node.children && node.children.length === 1 && typeof node.children[0] === 'string') {
+        element.textContent = node.children[0];
+    }
 }
 
 const table = {
