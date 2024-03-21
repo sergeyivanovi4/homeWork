@@ -29,3 +29,7 @@ function createStore(reducer){
         subscribe //добавление subscribe в объект
     }
 }
+
+
+// Тут типу того??? =))
+
