@@ -17,6 +17,18 @@
 // Accept - application/json
 // Тіло - JSON, об'єкт з двома ключами - query (текст запиту) та variables
 
+const endpoint = "http://shop-roles.node.ed.asmer.org.ua/graphql";
+const query = `
+    query cats($q: String){
+        CategoryFind(query: $q){
+            _id name
+        }
+    }
+`;
+const variables = {
+    q: "[{}]"
+};
+
 async function gql(endpoint, query, variables) {
     const options = {
         method: 'POST',
@@ -38,19 +50,6 @@ async function gql(endpoint, query, variables) {
         throw new Error(`GraphQL request failed: ${error}`);
     }
 }
-
-
-const endpoint = "http://shop-roles.node.ed.asmer.org.ua/graphql";
-const query = `
-    query cats($q: String){
-        CategoryFind(query: $q){
-            _id name
-        }
-    }
-`;
-const variables = {
-    q: "[{}]"
-};
 
 gql(endpoint, query, variables)
     .then(data => console.log(data))

@@ -55,3 +55,13 @@ function jwtDecode(token) {
         return undefined;
     }
 }
+
+// АБО
+
+function jwtDecode(token) {
+    try {
+        return JSON.parse(atob (token.split(".")[1]))
+    } catch(error) {
+        return undefined
+    }
+}
