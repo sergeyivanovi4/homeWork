@@ -79,6 +79,7 @@ function getSetForm(parent, getSet) {
         const input = document.createElement('input');
         input.type = 'text';
         input.placeholder = fieldName;
+        input.disabled = true; // тут встановлюємо властивість disabledб щоб Ви не  вписали податок за ту BMW власноруч 😊
         input.addEventListener('input', () => {
           // Оновити значення за допомогою функції set
           getSet[setKey](input.value);

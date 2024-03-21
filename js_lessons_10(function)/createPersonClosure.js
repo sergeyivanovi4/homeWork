@@ -66,21 +66,21 @@ function createPersonClosure(name, surname) {
         //     return capitalize(fatherName);
         // },
         setName: (newName) => {
-            if (typeof newName === 'string' && /^[A-Z][a-z]*$/.test(newName)) {
+            if (typeof newName === 'string' && /^[А-ЩЬЮЯҐЄІЇ][а-щьюяґєії]*$/i.test(newName)) {  //   /^[A-Z][a-z]*$/.test(newName)
               name = newName;
             }
             return name;
         },
       
           setSurname: (newSurname) => {
-            if (typeof newSurname === 'string' && /^[A-Z][a-z]*$/.test(newSurname)) {
+            if (typeof newSurname === 'string' && /^[А-ЩЬЮЯҐЄІЇ][а-щьюяґєії]*$/i.test(newSurname)) { //  /^[A-Z][a-z]*$/.test(newSurname)
               surname = newSurname;
             }
             return surname;
         },
       
           setFatherName: (newFatherName) => {
-            if (typeof newFatherName === 'string' && /^[A-Z][a-z]*$/.test(newFatherName)) {
+            if (typeof newFatherName === 'string' && /^[А-ЩЬЮЯҐЄІЇ][а-щьюяґєії]*$/i.test(newFatherName)) {  //  /^[A-Z][a-z]*$/.test(newFatherName)
               fatherName = newFatherName;
             }
             return fatherName;
@@ -92,9 +92,18 @@ function createPersonClosure(name, surname) {
             return age;
         },
         setFullName(newFullName) {
+          setFullNameParts(newFullName);
             return `${name} ${fatherName || ''} ${surname}`.trim();
         }
     }
+
+    function setFullNameParts(fullName) {
+      const parts = fullName.split(' ');
+      name = parts[0] || '';
+      surname = parts[1] || '';
+      fatherName = parts.slice(2).join(' ') || '';
+  }
 } 
 
-// щось не розумію 
+// щось не розумію і доробив з ЖПТ ось так:
+// добавив щє function setFullNameParts(fullName)
