@@ -4,9 +4,14 @@
 
 let length = prompt("Введіть довжину рядка:");
 
-let result = "";
+if (isNaN(length) || length <= 0) {
+    console.error("Будь ласка, введіть коректне значення для довжини рядка.");
+} else {
+    let result = "";
 
-for (let i = 0; i < length; i++) {
-    result += "# ";
+    for (let i = 0; i < length; i++) {
+        result += "# ";
+    }
+
+    console.log(result);
 }
-console.log(result);
